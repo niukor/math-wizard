@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, UserRole } from '../types';
+import type { User, UserRole } from '../types';
 import { 
   Calculator, 
   Ruler, 

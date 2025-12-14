@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User } from '../types';
+import type { User } from '../types';
 import { GraduationCap, Lock, ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface TeacherLoginPageProps {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, UserRole } from '../types';
+import type { User, UserRole } from '../types';
 import { Calculator, User as UserIcon, GraduationCap, ArrowRight, Sparkles } from 'lucide-react';
 
 interface LoginPageProps {
