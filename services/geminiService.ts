@@ -1,15 +1,24 @@
-import { GoogleGenAI } from "@google/genai";
+// import { GoogleGenAI } from "@google/genai";
 
-const getClient = () => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    console.warn("API_KEY is missing. Gemini features will be disabled.");
-    return null;
-  }
-  return new GoogleGenAI({ apiKey });
-};
+// const getClient = () => {
+//   // Support both standard Node.js env and Vite env variables
+//   // Note: For Vite, ensure you have VITE_API_KEY defined in .env
+//   let apiKey = process.env.API_KEY;
+  
+//   if (!apiKey && typeof import.meta !== 'undefined' && (import.meta as any).env) {
+//     apiKey = (import.meta as any).env.VITE_API_KEY;
+//   }
+
+//   if (!apiKey) {
+//     console.warn("API_KEY is missing. Gemini features will be disabled.");
+//     return null;
+//   }
+//   return new GoogleGenAI({ apiKey });
+// };
 
 export const generateMathStory = async (dividend: number, divisor: number): Promise<string> => {
+  return ""; // AI Disabled
+  /*
   const client = getClient();
   if (!client) return "请输入 API Key 来获取神奇的数学故事！";
 
@@ -23,9 +32,12 @@ export const generateMathStory = async (dividend: number, divisor: number): Prom
     console.error("Gemini Error:", error);
     return "让我们一步步算出来！";
   }
+  */
 };
 
 export const generateEncouragement = async (stepType: string): Promise<string> => {
+   return ""; // AI Disabled
+   /*
    const client = getClient();
    if (!client) return "";
    
@@ -38,4 +50,5 @@ export const generateEncouragement = async (stepType: string): Promise<string> =
   } catch (error) {
     return "";
   }
+  */
 }

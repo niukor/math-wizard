@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { generateSteps } from './utils/divisionGenerator';
-import { generateMathStory } from './services/geminiService';
+// import { generateMathStory } from './services/geminiService'; // AI Disabled
 import { DivisionStep, StepType } from './types';
 import { Visualizer } from './components/Visualizer';
 import { HelperTable } from './components/HelperTable';
@@ -18,8 +18,8 @@ const App: React.FC = () => {
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(-1);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
-  const [mathStory, setMathStory] = useState<string>('');
-  const [loadingStory, setLoadingStory] = useState<boolean>(false);
+  // const [mathStory, setMathStory] = useState<string>(''); // AI Disabled
+  // const [loadingStory, setLoadingStory] = useState<boolean>(false); // AI Disabled
 
   const timerRef = useRef<number | null>(null);
 
@@ -60,18 +60,20 @@ const App: React.FC = () => {
     setCurrentStepIndex(0);
     setIsPlaying(false);
     
-    // AI Integration
+    // AI Integration - Temporarily Disabled
+    /*
     setLoadingStory(true);
     const story = await generateMathStory(d, dv);
     setMathStory(story);
     setLoadingStory(false);
+    */
   };
 
   const reset = () => {
     setSteps([]);
     setCurrentStepIndex(-1);
     setIsPlaying(false);
-    setMathStory('');
+    // setMathStory(''); // AI Disabled
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
@@ -181,8 +183,8 @@ const App: React.FC = () => {
             </button>
           </motion.div>
 
-          {/* Math Story */}
-          <AnimatePresence>
+          {/* Math Story - Temporarily Disabled */}
+          {/* <AnimatePresence>
             {(mathStory || loadingStory) && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
@@ -209,7 +211,7 @@ const App: React.FC = () => {
                 )}
               </motion.div>
             )}
-          </AnimatePresence>
+          </AnimatePresence> */}
 
           {/* Helper Table */}
           <AnimatePresence>
