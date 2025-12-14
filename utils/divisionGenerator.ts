@@ -1,4 +1,5 @@
-import { DivisionStep, StepType } from '../types';
+import { StepType } from '../types';
+import type { DivisionStep } from '../types';
 
 export const generateSteps = (dividend: number, divisor: number): DivisionStep[] => {
   const steps: DivisionStep[] = [];

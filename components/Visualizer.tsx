@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DivisionStep, StepType } from '../types';
+import { StepType } from '../types';
+import type { DivisionStep } from '../types';
 import { ArrowDown, X, Equal, BrainCircuit } from 'lucide-react';
 
 interface VisualizerProps {
