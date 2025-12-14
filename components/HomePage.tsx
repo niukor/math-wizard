@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { User, UserRole } from '../types';
 import { 
   Calculator, 
   Ruler, 
@@ -7,14 +8,13 @@ import {
   ArrowRight, 
   Star, 
   Trophy,
-  User,
+  User as UserIcon,
   Divide,
   X,
   Binary,
   Thermometer,
   Compass,
   Clock,
-  Circle,
   Shapes,
   Coins,
   Scale,
@@ -28,16 +28,17 @@ import {
   BoxSelect,
   Layers,
   GraduationCap,
-  RefreshCw
+  LogOut
 } from 'lucide-react';
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
+  currentUser: User;
+  onLogout: () => void;
 }
 
 // Data Models
 type UnitStatus = 'locked' | 'active' | 'completed';
-type UserRole = 'teacher' | 'student';
 
 interface Unit {
   id: number;
@@ -58,32 +59,26 @@ interface GradeData {
   [key: number]: SemesterData;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
-  const [userRole, setUserRole] = useState<UserRole>('teacher');
-  const [activeGrade, setActiveGrade] = useState<number>(4);
-  const [activeSemester, setActiveSemester] = useState<1 | 2>(1); // 1 for 上册, 2 for 下册
+export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentUser, onLogout }) => {
+  // Initialize state based on the logged-in user
+  const [activeGrade, setActiveGrade] = useState<number>(currentUser.grade || 4);
+  const [activeSemester, setActiveSemester] = useState<1 | 2>(currentUser.semester || 1); 
 
-  // Reset to specific student data when switching to student mode
+  // If user changes (unlikely without unmounting, but good practice), update state
   useEffect(() => {
-    if (userRole === 'student') {
-      setActiveGrade(4);
-      setActiveSemester(1);
+    if (currentUser.role === 'student' && currentUser.grade) {
+      setActiveGrade(currentUser.grade);
+      setActiveSemester(currentUser.semester || 1);
     }
-  }, [userRole]);
+  }, [currentUser]);
 
-  // Current User Display Data
-  const currentUser = userRole === 'teacher' ? {
-    name: "李老师",
-    title: "数学教研组",
-    avatarIcon: <GraduationCap className="w-6 h-6" />,
-    avatarColor: "bg-math-purple",
-    welcome: "您正在查看全校课程进度"
+  // Display configurations based on role
+  const userDisplay = currentUser.role === 'teacher' ? {
+    welcome: "您正在查看全校课程进度",
+    subtitle: "教学管理模式"
   } : {
-    name: "李小明",
-    title: "四年级 (2) 班",
-    avatarIcon: <User className="w-6 h-6" />,
-    avatarColor: "bg-math-blue",
-    welcome: "准备好今天的数学探险了吗？"
+    welcome: "准备好今天的数学探险了吗？",
+    subtitle: currentUser.className || `${currentUser.grade}年级`
   };
 
   // Curriculum Data (Based on BNU - North Normal University Version)
@@ -179,10 +174,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     }
   };
 
-  const toggleRole = () => {
-    setUserRole(prev => prev === 'teacher' ? 'student' : 'teacher');
-  };
-
   return (
     <div className="min-h-screen bg-sky-50 font-sans text-gray-800 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
       
@@ -200,37 +191,36 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Right Area: Role Toggle + Profile */}
+          {/* Right Area: Profile & Logout */}
           <div className="flex items-center gap-4">
-             {/* Role Toggle Button */}
-             <button 
-               onClick={toggleRole}
-               className="flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-sm font-bold text-gray-600 transition-colors shadow-sm"
-               title="切换身份 (教师/学生)"
-             >
-               <RefreshCw className="w-4 h-4" />
-               <span className="hidden sm:inline">{userRole === 'teacher' ? '切换到学生端' : '切换到教师端'}</span>
-             </button>
-
              {/* Profile */}
              <div className="flex items-center gap-4 bg-white px-2 py-1.5 rounded-full border-2 border-gray-100 shadow-sm">
                 <div className="hidden md:flex flex-col items-end mr-2">
                   <span className="text-sm font-bold text-gray-700">{currentUser.name}</span>
-                  <span className="text-xs text-gray-400 font-medium">{currentUser.title}</span>
+                  <span className="text-xs text-gray-400 font-medium">{userDisplay.subtitle}</span>
                 </div>
                 
                 <div className="flex items-center gap-3">
-                   {userRole === 'student' && (
+                   {currentUser.role === 'student' && (
                      <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-full border border-yellow-200">
                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
                        <span className="text-sm font-bold text-yellow-700">128</span>
                      </div>
                    )}
-                   <div className={`w-10 h-10 ${currentUser.avatarColor} rounded-full flex items-center justify-center text-white border-2 border-white shadow-md`}>
-                     {currentUser.avatarIcon}
+                   <div className={`w-10 h-10 ${currentUser.avatarColor || 'bg-math-blue'} rounded-full flex items-center justify-center text-white border-2 border-white shadow-md`}>
+                     {currentUser.role === 'teacher' ? <GraduationCap className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />}
                    </div>
                 </div>
              </div>
+
+             {/* Logout Button */}
+             <button 
+               onClick={onLogout}
+               className="bg-red-50 hover:bg-red-100 p-2 rounded-full text-red-400 hover:text-red-500 transition-colors"
+               title="退出登录"
+             >
+               <LogOut className="w-5 h-5" />
+             </button>
           </div>
         </div>
       </header>
@@ -247,12 +237,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             <h2 className="text-3xl md:text-4xl font-extrabold text-math-blue mb-2 font-comic">
               欢迎回来，{currentUser.name}！ 👋
             </h2>
-            <p className="text-gray-500 font-medium text-lg">{currentUser.welcome}</p>
+            <p className="text-gray-500 font-medium text-lg">{userDisplay.welcome}</p>
           </motion.div>
 
           {/* Teacher Controls: Only visible when role is teacher */}
           <AnimatePresence>
-            {userRole === 'teacher' && (
+            {currentUser.role === 'teacher' && (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -296,7 +286,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             )}
             
             {/* Student Badge: Visible when student */}
-            {userRole === 'student' && (
+            {currentUser.role === 'student' && (
                <motion.div
                  initial={{ opacity: 0, scale: 0.9 }}
                  animate={{ opacity: 1, scale: 1 }}
@@ -307,7 +297,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                  </div>
                  <div>
                    <div className="text-xs font-bold text-gray-400 uppercase">当前课程</div>
-                   <div className="text-lg font-bold text-gray-800">四年级 (上册)</div>
+                   <div className="text-lg font-bold text-gray-800">{activeGrade}年级 ({activeSemester === 1 ? '上' : '下'}册)</div>
                  </div>
                </motion.div>
             )}

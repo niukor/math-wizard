@@ -16,7 +16,6 @@ export interface DivisionStep {
   quotient: (string | null)[];
   
   // The working rows representing the subtraction history
-  // Each row is a string of numbers positioned by offset
   history: {
     value: string;
     offset: number; // visual indentation
@@ -42,4 +41,18 @@ export interface DivisionStep {
 export interface DivisionProblem {
   dividend: number;
   divisor: number;
+}
+
+// User & Auth Types
+export type UserRole = 'teacher' | 'student';
+
+export interface User {
+  id: string;
+  name: string;
+  role: UserRole;
+  grade?: number; // Only for students
+  semester?: 1 | 2; // Only for students
+  className?: string; // e.g. "四年级二班"
+  avatarColor?: string;
+  phoneNumber?: string; // Added for student login validation
 }
