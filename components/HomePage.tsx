@@ -63,6 +63,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentUser, onL
   // Initialize state based on the logged-in user
   const [activeGrade, setActiveGrade] = useState<number>(currentUser.grade || 4);
   const [activeSemester, setActiveSemester] = useState<1 | 2>(currentUser.semester || 1); 
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Helper to get status from local storage
+  const getUnitStatus = (grade: number, semester: number, unitId: number, defaultStatus: UnitStatus): UnitStatus => {
+    const key = `mathWizard_progress_${grade}_${semester}_${unitId}`;
+    const saved = localStorage.getItem(key);
+    if (saved === 'completed') return 'completed';
+    return defaultStatus;
+  };
 
   // If user changes (unlikely without unmounting, but good practice), update state
   useEffect(() => {
@@ -71,6 +80,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentUser, onL
       setActiveSemester(currentUser.semester || 1);
     }
   }, [currentUser]);
+
+  // Re-render when coming back to home to check for updates
+  useEffect(() => {
+    setRefreshTrigger(prev => prev + 1);
+  }, [currentUser]); // Simplified trigger
 
   // Display configurations based on role
   const userDisplay = currentUser.role === 'teacher' ? {
@@ -82,7 +96,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentUser, onL
   };
 
   // Curriculum Data (Based on BNU - North Normal University Version)
-  const curriculumData: GradeData = {
+  // Note: We compute this on render to capture fresh localStorage state
+  const getCurriculumData = (): GradeData => ({
     1: {
       1: [
         { id: 1, title: "快乐的校园", icon: <Apple className="w-8 h-8" />, color: "bg-red-100 text-red-600", status: "locked", desc: "10以内数的认识" },
@@ -153,7 +168,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentUser, onL
         { id: 3, title: "乘法", icon: <X className="w-8 h-8" />, color: "bg-orange-100 text-orange-600", status: "locked", desc: "三位数乘两位数" },
         { id: 4, title: "运算律", icon: <LayoutGrid className="w-8 h-8" />, color: "bg-green-100 text-green-600", status: "locked" },
         { id: 5, title: "方向与位置", icon: <Compass className="w-8 h-8" />, color: "bg-teal-100 text-teal-600", status: "locked" },
-        { id: 6, title: "除法", icon: <Divide className="w-8 h-8" />, color: "bg-pink-100 text-pink-600", status: "active", desc: "2位数除法动画演示", action: 'division' },
+        { id: 6, title: "除法", icon: <Divide className="w-8 h-8" />, color: "bg-pink-100 text-pink-600", status: getUnitStatus(4, 1, 6, "active"), desc: "2位数除法动画演示", action: 'division' },
         { id: 7, title: "生活中的负数", icon: <Thermometer className="w-8 h-8" />, color: "bg-indigo-100 text-indigo-600", status: "locked" },
         { id: 8, title: "数学好玩", icon: <Trophy className="w-8 h-8" />, color: "bg-yellow-100 text-yellow-600", status: "locked" },
       ],
@@ -166,10 +181,13 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentUser, onL
         { id: 6, title: "数据的表示", icon: <PieChart className="w-8 h-8" />, color: "bg-teal-100 text-teal-600", status: "locked", desc: "条形统计图" },
       ]
     }
-  };
+  });
+
+  const curriculumData = getCurriculumData();
 
   const handleUnitClick = (unit: Unit) => {
-    if (unit.status === 'active' && unit.action) {
+    // Allow clicking 'completed' units too
+    if ((unit.status === 'active' || unit.status === 'completed') && unit.action) {
       onNavigate(unit.action);
     }
   };
@@ -307,7 +325,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentUser, onL
         {/* Curriculum Grid */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={`${activeGrade}-${activeSemester}`}
+            key={`${activeGrade}-${activeSemester}-${refreshTrigger}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -320,11 +338,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentUser, onL
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
-                whileHover={unit.status === 'active' ? { scale: 1.05, y: -5 } : {}}
+                whileHover={unit.status === 'active' || unit.status === 'completed' ? { scale: 1.05, y: -5 } : {}}
                 onClick={() => handleUnitClick(unit)}
                 className={`
                   relative p-6 rounded-[2rem] border-b-8 transition-all duration-300 flex flex-col h-48 justify-between shadow-xl
-                  ${unit.status === 'active' 
+                  ${unit.status === 'active' || unit.status === 'completed'
                     ? 'bg-white cursor-pointer hover:shadow-2xl border-gray-200' 
                     : 'bg-gray-50/80 border-gray-200/50 opacity-70 cursor-not-allowed grayscale-[0.3]'}
                 `}
@@ -344,8 +362,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentUser, onL
                     </div>
                   )}
                   {unit.status === 'completed' && (
-                    <div className="bg-yellow-100 px-2 py-1 rounded-lg text-xs font-bold text-yellow-600">
-                      已完成
+                    <div className="bg-yellow-100 px-2 py-1 rounded-lg text-xs font-bold text-yellow-600 flex items-center gap-1">
+                      <Trophy className="w-3 h-3" /> 已完成
                     </div>
                   )}
                 </div>
@@ -357,7 +375,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentUser, onL
                   </p>
                 </div>
 
-                {unit.status === 'active' && (
+                {(unit.status === 'active' || unit.status === 'completed') && (
                   <div className="absolute bottom-6 right-6 bg-math-blue text-white p-2 rounded-full shadow-lg shadow-indigo-200">
                     <ArrowRight className="w-5 h-5" />
                   </div>

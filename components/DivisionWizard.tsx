@@ -6,7 +6,7 @@ import type { DivisionStep } from '../types';
 import { Visualizer } from './Visualizer';
 import { HelperTable } from './HelperTable';
 import { Wizard } from './Wizard';
-import { Play, Pause, ChevronRight, ChevronLeft, RotateCcw, Calculator, Sparkles, BookOpen, ArrowLeft } from 'lucide-react';
+import { Play, Pause, ChevronRight, ChevronLeft, RotateCcw, Calculator, Sparkles, BookOpen, ArrowLeft, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface DivisionWizardProps {
@@ -64,14 +64,6 @@ export const DivisionWizard: React.FC<DivisionWizardProps> = ({ onBack }) => {
     setSteps(generated);
     setCurrentStepIndex(0);
     setIsPlaying(false);
-    
-    // AI Integration - Temporarily Disabled
-    /*
-    setLoadingStory(true);
-    const story = await generateMathStory(d, dv);
-    setMathStory(story);
-    setLoadingStory(false);
-    */
   };
 
   const reset = () => {
@@ -95,6 +87,14 @@ export const DivisionWizard: React.FC<DivisionWizardProps> = ({ onBack }) => {
     if (currentStepIndex > 0) {
       setCurrentStepIndex(currentStepIndex - 1);
     }
+  };
+
+  const handleComplete = () => {
+    // Save progress to localStorage (Simple Mock Persistence)
+    // Key format: progress_GRADE_SEMESTER_UNITID
+    // Division Unit is hardcoded as G4-S1-U6 in HomePage
+    localStorage.setItem('mathWizard_progress_4_1_6', 'completed');
+    onBack();
   };
 
   useEffect(() => {
@@ -197,36 +197,6 @@ export const DivisionWizard: React.FC<DivisionWizardProps> = ({ onBack }) => {
             </button>
           </motion.div>
 
-          {/* Math Story - Temporarily Disabled */}
-          {/* <AnimatePresence>
-            {(mathStory || loadingStory) && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="bg-white p-5 rounded-3xl border-2 border-purple-100 shadow-md overflow-hidden relative"
-              >
-                <div className="absolute top-0 right-0 p-3 opacity-10">
-                  <BookOpen className="w-16 h-16 text-purple-500" />
-                </div>
-                <h3 className="font-comic font-bold text-purple-600 mb-2 flex items-center gap-2">
-                  <span className="bg-purple-100 p-1 rounded-md"><Sparkles className="w-4 h-4" /></span>
-                  应用题挑战
-                </h3>
-                {loadingStory ? (
-                  <div className="animate-pulse flex space-x-4">
-                    <div className="flex-1 space-y-2 py-1">
-                      <div className="h-4 bg-purple-100 rounded w-3/4"></div>
-                      <div className="h-4 bg-purple-100 rounded"></div>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-purple-800 text-base leading-relaxed font-medium">{mathStory}</p>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence> */}
-
           {/* Helper Table */}
           <AnimatePresence>
             {steps.length > 0 && (
@@ -278,19 +248,33 @@ export const DivisionWizard: React.FC<DivisionWizardProps> = ({ onBack }) => {
                    <ChevronLeft className="w-6 h-6" />
                  </button>
                  
-                 <div className="flex flex-col items-center">
-                   <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
-                     步骤 {currentStepIndex + 1} / {steps.length}
-                   </div>
+                 <div className="flex flex-col items-center gap-2">
+                   {/* Main Play/Pause Button */}
                    <button 
                     onClick={() => setIsPlaying(!isPlaying)}
                     disabled={currentStepIndex >= steps.length - 1}
                     className={`w-14 h-14 rounded-full text-white shadow-lg transition-all hover:scale-110 active:scale-95 flex items-center justify-center ${
-                      currentStepIndex >= steps.length - 1 ? 'bg-gray-300' : 'bg-math-blue hover:bg-indigo-600'
+                      currentStepIndex >= steps.length - 1 ? 'hidden' : 'bg-math-blue hover:bg-indigo-600'
                     }`}
                    >
                      {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current ml-1" />}
                    </button>
+                   
+                   {/* Completion Button */}
+                   {currentStepIndex >= steps.length - 1 && (
+                     <motion.button
+                       initial={{ scale: 0 }}
+                       animate={{ scale: 1 }}
+                       onClick={handleComplete}
+                       className="px-6 py-3 bg-math-yellow text-white rounded-xl shadow-lg shadow-yellow-200 font-bold flex items-center gap-2 hover:bg-yellow-500 transition-colors animate-pulse"
+                     >
+                        <Trophy className="w-5 h-5" /> 完成挑战
+                     </motion.button>
+                   )}
+
+                   <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                     步骤 {currentStepIndex + 1} / {steps.length}
+                   </div>
                  </div>
 
                  <button 
