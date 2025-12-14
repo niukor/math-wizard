@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface WizardProps {
   emotion: 'happy' | 'thinking' | 'magic' | 'waiting';
@@ -18,7 +18,6 @@ export const Wizard: React.FC<WizardProps> = ({ emotion, message }) => {
   };
 
   const getWizardImage = () => {
-    // A simple SVG representation of a wizard that changes slightly
     return (
       <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
         {/* Robe */}
@@ -67,6 +66,50 @@ export const Wizard: React.FC<WizardProps> = ({ emotion, message }) => {
     );
   };
 
+  // Function to parse the message and apply highlighting
+  const renderHighlightedMessage = (text: string) => {
+    // Regex matches:
+    // 1. Numbers (\d+)
+    // 2. Math Operators (×, ÷, =, +, -)
+    // 3. Specific Keywords (试商, 余数, 落下来, 不够除, 够除, 四舍, 五入)
+    const regex = /(\d+|[×÷=+\-]|试商|余数|落下来|不够除|够除|四舍|五入)/g;
+    const parts = text.split(regex);
+
+    return parts.map((part, index) => {
+      if (!part) return null;
+
+      let className = "text-gray-800"; // Default
+      
+      // Check if it's a number
+      if (/^\d+$/.test(part)) {
+        className = "text-math-blue font-bold text-xl inline-block mx-0.5";
+      }
+      // Check if it's an operator
+      else if (/^[×÷=+\-]$/.test(part)) {
+        className = "text-math-pink font-bold text-xl mx-1";
+      }
+      // Check keywords
+      else if (["试商", "余数", "四舍", "五入"].includes(part)) {
+        className = "text-math-purple font-bold border-b-2 border-math-purple/30";
+      }
+      else if (["落下来", "不够除", "够除"].includes(part)) {
+        className = "text-math-green font-bold";
+      }
+
+      return (
+        <motion.span
+          key={index}
+          className={className}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: index * 0.05 }} // Typewriter effect
+        >
+          {part}
+        </motion.span>
+      );
+    });
+  };
+
   return (
     <div className="flex flex-row md:flex-col items-start md:items-center gap-4 w-full">
       {/* Wizard Character */}
@@ -89,14 +132,16 @@ export const Wizard: React.FC<WizardProps> = ({ emotion, message }) => {
 
       {/* Speech Bubble */}
       <motion.div 
-        className="relative bg-white p-5 rounded-2xl rounded-tl-none shadow-lg border-2 border-math-blue/20 flex-grow"
+        className="relative bg-white p-6 rounded-2xl rounded-tl-none shadow-lg border-2 border-math-blue/20 flex-grow w-full"
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        key={message} // Re-animate on new message
+        key={message} // Re-mount component on new message to trigger typewriter effect
       >
-        <p className="text-lg font-bold text-gray-800 font-comic leading-relaxed">
-          {message}
-        </p>
+        <div className="text-lg md:text-xl font-comic leading-relaxed tracking-wide">
+          {renderHighlightedMessage(message)}
+        </div>
+        
+        {/* Little tail triangle */}
         <div className="absolute top-0 left-0 -ml-2 mt-4 w-4 h-4 bg-white border-t-2 border-l-2 border-math-blue/20 transform -rotate-45"></div>
       </motion.div>
     </div>

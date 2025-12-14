@@ -58,14 +58,19 @@ export const Visualizer: React.FC<VisualizerProps> = ({ dividend, divisor, curre
               key={`h-${rIdx}`} 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className={`flex items-center ml-2 relative ${row.isSubtraction ? 'border-b-4 border-gray-800' : ''}`}
+              className={`flex items-center relative ${row.isSubtraction ? 'border-b-4 border-gray-800' : ''}`}
               style={{ paddingLeft: `${paddingLeft}rem` }}
             >
               {row.operator && (
                 <motion.span 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="absolute left-0 -ml-6 text-2xl font-bold text-gray-400 font-sans"
+                  // Fixed: Adjusted positioning logic. 
+                  // Previously -ml-6 (1.5rem) was too far left and hit the bracket.
+                  // Now using calc to position it just to the left of the digit block.
+                  // -0.8rem places it nicely to the left of the number without being too far.
+                  className="absolute text-3xl font-bold text-gray-400 font-sans"
+                  style={{ left: `calc(${paddingLeft}rem - 0.8rem)` }}
                 >
                   {row.operator}
                 </motion.span>
@@ -73,7 +78,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({ dividend, divisor, curre
               {row.value.split('').map((char, cIdx) => (
                 <div 
                   key={`h-${rIdx}-${cIdx}`} 
-                  className="flex items-center justify-center text-2xl font-sans font-bold text-gray-700"
+                  className="flex items-center justify-center text-3xl font-sans font-bold text-gray-700"
                   style={{ width: `${UNIT_W}rem`, height: `${UNIT_H}rem` }}
                 >
                   {char}
@@ -149,7 +154,6 @@ export const Visualizer: React.FC<VisualizerProps> = ({ dividend, divisor, curre
         <div className="flex items-start pl-2">
           
           {/* Left Column: Spacer + Divisor */}
-          {/* Added ml-28 (roughly 112px) to reserve space for the absolute positioned speech bubble on the left */}
           <div className="flex flex-col mr-4 ml-28">
              {/* Spacer to push divisor down below the quotient line */}
              <div style={{ height: `${UNIT_H}rem` }}></div>
@@ -202,7 +206,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({ dividend, divisor, curre
 
              {/* 2. Dividend Row + Bracket */}
              <div className="relative">
-                {/* The Big Bracket SVG - Absolute positioned relative to this container */}
+                {/* The Big Bracket SVG */}
                 <svg className="absolute left-0 top-0 h-full w-6 -ml-4 pointer-events-none overflow-visible">
                   <path 
                     d="M15,100 C-5,80 -5,20 15,0" 
